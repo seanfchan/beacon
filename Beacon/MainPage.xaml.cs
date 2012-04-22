@@ -15,78 +15,31 @@ using System.IO;
 using System.Text;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using Microsoft.Phone.Info;
+using System.Diagnostics;
 
 namespace Beacon
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        List<Friend> FriendList;
-
         // Constructor
         public MainPage()
         {
             InitializeComponent();
-            FriendList = new List<Friend>();
         }
 
-        private void FindFriendsBtn_Click(object sender, RoutedEventArgs e)
+        private void SignInBtn_Click(object sender, RoutedEventArgs e)
         {
-            GetLocation();
-        }
+            byte[] uniqueId = (byte[])DeviceExtendedProperties.GetValue("DeviceUniqueId");
+            StringBuilder temp = new StringBuilder();
 
-        public List<Friend> GetLocation()
-        {
-            string uri = "http://seanfchan.com/beacon/getLocations.php";
-            WebClient wc = new WebClient();
-            wc.UploadStringCompleted += new UploadStringCompletedEventHandler(wc_UploadStringCompleted);
-            wc.UploadStringAsync(new Uri(uri), "");
-
-            return FriendList;
-        }
-
-        public void wc_UploadStringCompleted(object sender, UploadStringCompletedEventArgs e)
-        {
-            try
+            foreach (byte i in uniqueId)
             {
-                string temp = (string)e.Result;
-                MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(e.Result));
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(List<Friend>));
-                //Beacon beaconList;
-                //DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Beacon));
-                FriendList = serializer.ReadObject(ms) as List<Friend>;
-
-
-                FriendList_UI.ItemsSource = FriendList;
-                //for (Friend friend in FriendList)
-                //{
-                    
-                //}
-
+                temp.Append(i);
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
 
-
-    }
-
-    [DataContractAttribute]
-    public class Friend
-    {
-        [DataMember]
-        public String Name { get; set; }
-        [DataMember]
-        public double Latitude { get; set; }
-        [DataMember]
-        public double Longitude { get; set; }
-
-        public Friend(String name, double latitude, double longitude)
-        {
-            this.Name = name;
-            this.Latitude = latitude;
-            this.Longitude = longitude;
+            Debug.WriteLine(temp.ToString());
+            NavigationService.Navigate(new Uri("/Page1.xaml", UriKind.Relative));
         }
     }
 }
